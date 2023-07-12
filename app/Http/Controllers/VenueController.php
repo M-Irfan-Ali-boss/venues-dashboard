@@ -1,10 +1,12 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers;use Illuminate\Support\Str;
+
 
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Models\Venue;
+use App\Models\Logs;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -61,12 +63,26 @@ class VenueController extends Controller
         $role = $user->role;
         $userId = $user->id;
         $venues = [];
+        $managerId = null;
+        $staffId = null;
 
         if ($role === 'Staff') {
             $venues = Venue::where('staff_id', $userId)->get();
+            $staffId = $userId;
         } elseif ($role === 'Manager') {
             $venues = Venue::where('manager_id', $userId)->get();
+            $managerId = $userId;
         }
+
+        $logs = Logs::create([
+            'name' => $request->name,
+            'description' => $request->description,
+            'perfomed_by' => $user->role,
+            'type' => 'event_create',
+            'manager_id' => $managerId,
+            'staff_id' => $staffId,
+            'veneus_id' => $venue->id,
+        ]);
 
         // Redirect to the index or show page
         return Inertia::render('Venue/Venue', [
@@ -92,18 +108,31 @@ class VenueController extends Controller
     {
         $venue = Venue::findOrFail($request['id']);
         // Validate and update the venue
-        $managerId = Auth::id();
         $venue->update($request->all());
         $user = Auth::user();
         $role = $user->role;
         $userId = $user->id;
         $venues = [];
+        $staffId = null;
+        $managerId = null;
 
         if ($role === 'Staff') {
             $venues = Venue::where('staff_id', $userId)->get();
+            $staffId = $userId;
         } elseif ($role === 'Manager') {
             $venues = Venue::where('manager_id', $userId)->get();
+            $managerId = $userId;
         }
+
+        $logs = Logs::create([
+            'name' => $request->name,
+            'description' => $request->description,
+            'perfomed_by' => $user->role,
+            'type' => 'event_updated',
+            'manager_id' => $managerId,
+            'staff_id' => $staffId,
+            'veneus_id' => $venue->id,
+        ]);
 
         // Redirect to the index or show page
         return Inertia::render('Venue/Venue', [
@@ -117,8 +146,29 @@ class VenueController extends Controller
         $venue = Venue::find($venueId);
         $venue->delete();
         
-        $managerId = Auth::id();
-        $venues = Venue::where('manager_id', $managerId)->get();
+        $user = Auth::user();
+        $role = $user->role;
+        $userId = $user->id;
+        $venues = Venue::where('manager_id', $userId)->get();
+        $staffId = null;
+        $managerId = null;
+
+        if ($role === 'Staff') {
+            $staffId = $userId;
+        } elseif ($role === 'Manager') {
+            $managerId = $userId;
+        }
+        
+
+        $logs = Logs::create([
+            'name' => 'Delete Event',
+            'description' => 'Delete Event Description',
+            'perfomed_by' => $user->role,
+            'type' => 'event_deleted',
+            'manager_id' => $managerId,
+            'staff_id' => $staffId,
+            'veneus_id' => $venue->id,
+        ]);
 
         // Redirect to the index or show page
         return Inertia::render('Venue/Venue', [

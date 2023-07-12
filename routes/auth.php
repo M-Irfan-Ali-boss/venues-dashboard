@@ -62,8 +62,12 @@ Route::middleware('auth')->group(function () {
     //Staff Routes
     Route::post('create-staff', [StaffController::class, 'store'])->name('create-staff');
     Route::post('update-staff', [StaffController::class, 'update'])->name('update-staff');
-
+    
     //Venue Routes
     Route::post('create-venue', [VenueController::class, 'store'])->name('create-venue');
     Route::post('update-venue', [VenueController::class, 'update'])->name('update-venue');
+
+    //Logs Routes
+    // Route::get('logs', [StaffController::class, 'store'])->name('create-staff');
+    // Route::post('update-staff', [StaffController::class, 'update'])->name('update-staff');
 });

@@ -54,8 +54,6 @@ class StaffController extends Controller
             $staffMembers = User::where('role', User::ROLE_VENUE_STAFF)->where('manager_id', $managerId)->get();
             // Additional logic if needed
 
-            // Mail::to($request->email)->cc('aliq30292@gmail.com')->send(new WelcomeEmail($staffMember));
-
             $status = Password::sendResetLink(
                 $request->only('email')
             );
@@ -111,7 +109,10 @@ class StaffController extends Controller
     {
         // Soft delete the venue
         $staff = User::find($staffId);
-        $staff->delete();
+
+        if ($staff != null) {
+            $staff->delete();
+        }
         
         $managerId = Auth::id();
         $staffMembers = User::where('role', User::ROLE_VENUE_STAFF)->where('manager_id', $managerId)->get();

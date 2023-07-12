@@ -40,6 +40,12 @@ class RegisteredUserController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
+        // if ($validator->fails()) {
+        //     return back()
+        //         ->withErrors($validator)
+        //         ->withInput();
+        // }
+
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
@@ -47,14 +53,10 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        event(new Registered($user));
+        $user->sendEmailVerificationNotification();
 
-        // Mail::to($request->email)->send(new SendGridMail('d-68b1966f04a64b69b90a3c74eac422d7',[
-        //     'name' => $request->name,
-        // ]));
+        // Auth::login($user);
 
-        Auth::login($user);
-
-        return redirect(RouteServiceProvider::HOME);
+        return redirect()->back()->with('message', 'Acconnt registered!');
     }
 }
